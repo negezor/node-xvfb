@@ -5,7 +5,7 @@
   ],
   "name": "xvfb",
   "description": "Easily start and stop an X Virtual Frame Buffer from your node apps.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": {
     "url": "https://github.com/Rob--W/node-xvfb.git"
   },
