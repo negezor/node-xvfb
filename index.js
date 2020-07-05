@@ -18,7 +18,7 @@ try {
 
 function Xvfb(options) {
   options = options || {};
-  this._display = (options.displayNum ? ':' + options.displayNum : null);
+  this._display = (options.displayNum || options.displayNum === 0 ? ':' + options.displayNum : null);
   this._reuse = options.reuse;
   this._timeout = options.timeout || 500;
   this._silent = options.silent;
