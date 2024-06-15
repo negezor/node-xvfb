@@ -12,5 +12,8 @@
   "optionalDependencies": {
     "sleep": "6.3.0"
   },
+  "scripts": {
+    "test": "node test.js"
+  },
   "license": "MIT"
 }
