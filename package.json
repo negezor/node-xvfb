@@ -9,9 +9,6 @@
   "repository": {
     "url": "https://github.com/Rob--W/node-xvfb.git"
   },
-  "optionalDependencies": {
-    "sleep": "6.3.0"
-  },
   "scripts": {
     "test": "node test.js"
   },

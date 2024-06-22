@@ -5,17 +5,9 @@ var spawn = require('child_process').spawn;
 var fsExists = fs.exists || path.exists;
 var fsExistsSync = fs.existsSync || path.existsSync;
 
-var usleep;
-try {
-  usleep = require('sleep').usleep;
-} catch (e) {
-  usleep = function(microsecs) {
-    // Fall back to busy loop.
-    var deadline = Date.now() + microsecs / 1000;
-    while (Date.now() <= deadline);
-  };
+function usleep(n) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n / 1000);
 }
-
 
 function Xvfb(options) {
   options = options || {};
