@@ -2,20 +2,9 @@ var fs = require('fs');
 var path = require('path');
 var spawn = require('child_process').spawn;
 
-var fsExists = fs.exists || path.exists;
-var fsExistsSync = fs.existsSync || path.existsSync;
-
-var usleep;
-try {
-  usleep = require('sleep').usleep;
-} catch (e) {
-  usleep = function(microsecs) {
-    // Fall back to busy loop.
-    var deadline = Date.now() + microsecs / 1000;
-    while (Date.now() <= deadline);
-  };
+function usleep(n) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n / 1000);
 }
-
 
 function Xvfb(options) {
   options = options || {};
@@ -33,7 +22,8 @@ Xvfb.prototype = {
 
       this._setDisplayEnvVariable();
 
-      fsExists(lockFile, function(exists) {
+      fs.access(lockFile, fs.constants.F_OK, function(e) {
+        var exists = !e;
         var didSpawnFail = false;
         try {
           this._spawnProcess(exists, function(e) {
@@ -46,7 +36,8 @@ Xvfb.prototype = {
 
         var totalTime = 0;
         (function checkIfStarted() {
-          fsExists(lockFile, function(exists) {
+          fs.access(lockFile, fs.constants.F_OK, function(e) {
+            var exists = !e;
             if (didSpawnFail) {
               // When spawn fails, the callback will immediately be called.
               // So we don't have to check whether the lock file exists.
@@ -73,14 +64,14 @@ Xvfb.prototype = {
       var lockFile = this._lockFile();
 
       this._setDisplayEnvVariable();
-      this._spawnProcess(fsExistsSync(lockFile), function(e) {
+      this._spawnProcess(fs.existsSync(lockFile), function(e) {
         // Ignore async spawn error. While usleep is active, tasks on the
         // event loop cannot be executed, so spawn errors will never be
         // received during the startSync call.
       });
 
       var totalTime = 0;
-      while (!fsExistsSync(lockFile)) {
+      while (!fs.existsSync(lockFile)) {
         if (totalTime > this._timeout) {
           throw new Error('Could not start Xvfb.');
         }
@@ -100,7 +91,8 @@ Xvfb.prototype = {
       var lockFile = this._lockFile();
       var totalTime = 0;
       (function checkIfStopped() {
-        fsExists(lockFile, function(exists) {
+        fs.access(lockFile, fs.constants.F_OK, function(e) {
+          var exists = !e;
           if (!exists) {
             return cb && cb(null, this._process);
           } else {
@@ -125,7 +117,7 @@ Xvfb.prototype = {
 
       var lockFile = this._lockFile();
       var totalTime = 0;
-      while (fsExistsSync(lockFile)) {
+      while (fs.existsSync(lockFile)) {
         if (totalTime > this._timeout) {
           throw new Error('Could not stop Xvfb.');
         }
@@ -142,7 +134,7 @@ Xvfb.prototype = {
       do {
         displayNum++;
         lockFile = this._lockFile(displayNum);
-      } while (!this._reuse && fsExistsSync(lockFile));
+      } while (!this._reuse && fs.existsSync(lockFile));
       this._display = ':' + displayNum;
     }
     return this._display;
